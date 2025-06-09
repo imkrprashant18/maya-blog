@@ -1,0 +1,27 @@
+{
+  "name": "maya-blog",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon  src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/imkrprashant18/maya-blog.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/imkrprashant18/maya-blog/issues"
+  },
+  "homepage": "https://github.com/imkrprashant18/maya-blog#readme",
+  "dependencies": {
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "mongoose": "^8.15.1",
+    "nodemon": "^3.1.10"
+  }
+}
