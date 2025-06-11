@@ -1,6 +1,6 @@
 import User from "../models/user.models.js";
 import { UploadOnCloudinary } from "../utils/cloudinary.js";
-
+import jwt from "jsonwebtoken"
 
 const userRegister = async(req, res)=>{
        try {
@@ -60,25 +60,95 @@ const userRegister = async(req, res)=>{
 
 }
 
-
+// login user
 const loginUser = async(req, res)=>{
         try {
-                // email-password
-                // 
-                const {email, password}= req.body       
-                if(!email ){
-                        
-                }
-                const user = await User.findOne({email})
+               const {email, password} = req.body
+
+               if(!email || !password){
+                return res.status(400).json({
+                        success: false,
+                        message: "Please fill all the fields"
+                })
+               }
+
+               const existingUser = await User.findOne({email})
+               if(!existingUser){
+                return res.status(400).json({
+                        success: false,
+                        message: "User does not exist"
+                })
+               }
+               const isPasswordCorrect = await existingUser.isPasswordCorrect(password)
+               if(!isPasswordCorrect){
+                return res.status(400).json({
+                        success: false,
+                        message: "Invalid credentials"
+                })
+               }
+               const token = jwt.sign({
+                id: existingUser._id,
+                email: existingUser.email,
+                role: existingUser.role
+               },process.env.JWT_SECRETE_KEY,{
+                expiresIn:"1d"
+               })
+               const option = {
+                httpOnly: true,
+                secure: true
+               }
+               return res.status(200).cookie("token", token, option).json({
+                success: true,
+                message: "User logged in successfully",
+                token,
+                user: existingUser
+               })
+               
         } catch (error) {
-                
+                res.status(400).json({
+                        success: false,
+                        message: "Something went wrong while logging in the user"
+                })
+        }
+}
+
+
+// get -current user
+const getCurrentUser = async (req, res)=>{
+        try {
+                res.status(200).json({
+                        success: true,
+                        message: "User fetched successfully",
+                        user: req.user
+                })  
+        } catch (error) {
+                res.status(400).json({
+                        success: false,
+                        message: "Something went wrong while fetching the user"
+                })
+        }
+}
+
+
+//logout
+const logoutUser = async (req, res)=>{
+        try {
+                res.status(200).clearCookie("token").json({
+                        success: true,
+                        message: "User logged out successfully",
+                        user:{}
+                })
+        } catch (error) {
+                res.status(400).json({
+                        success: false,
+                        message: "Something went wrong while logging out the user"
+                })
         }
 }
 
 
 
 
-
 export {
-        userRegister
+        userRegister,loginUser, getCurrentUser, logoutUser
 }
