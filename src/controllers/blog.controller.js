@@ -213,8 +213,63 @@ const deleteBlog = async(req, res)=>{
                 })
         }
 }
+// likes blogs
+const likeBlog = async(req, res)=>{
+  try {
+    
+    const {blogId}= req.params
+    const userId = req.user._id
+    const blog = await Blog.findByIdAndUpdate(
+      blogId,{
+        $addToSet:{ikes: userId}
+      },
+      {new: true}
+    )
+    if(!blog){
+      return res.status(400).json({
+        success: false,
+        message: "Blog not found"
+      })
+    }
+    return res.status(200).json({
+      success: true,
+      message: "Blog liked successfully",
+      blog
+    })
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: "Server Error while liking blog",
+      error: error.message
+    })
+  }
+}
 
 
+// comments
+const addCommentToBlog = async (req, res) => {
+  try {
+    const { blogId } = req.params;
+    const { text } = req.body;
+    const userId = req.user._id;
+    const blog = await Blog.findById(blogId);
+    if (!blog) {
+      return res.status(404).json({ message: "Blog not found" });
+    }
+    const newComment = {
+      user: userId,
+      text,
+      commentedAt: new Date(),
+    };
+    blog.comments.push(newComment);
+    await blog.save();
+
+    res.status(200).json({ message: "Comment added", blog });
+  } catch (error) {
+    console.error("Error adding comment:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 
 
@@ -223,5 +278,8 @@ export {
         , getAllBlogs,
         getBlogByID,
         updateBlog,
-        deleteBlog
+        deleteBlog,
+        likeBlog,
+        addCommentToBlog,
+
 }
